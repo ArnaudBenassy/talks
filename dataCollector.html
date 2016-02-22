@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>DataCollector</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Hakim El Hattab">
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/logo.css">
+		<link rel="stylesheet" href="css/theme/night.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+					<h1>DataCollector</h1>
+					<h4>J'❤️ mon Profiler</h4>
+					<p>
+						<small>@abenassy</small>
+					</p>
+				</section>
+
+				<section>
+					<section>
+						<h2>Kézako ?</h2>
+						<p>
+							Le DataCollector est responsable de la collecte de données pour le compte du Profiler
+						</p>
+					</section>
+					<section>
+						<h2>Ce à quoi je m'attendais</h2>
+						<img class="fragment" src="img/collector.jpg" />
+					</section>
+					<section>
+						<h2>Ce que c'est en réalité</h2>
+						<img class="fragment" src="img/entonnoir.jpg" />
+					</section>
+					<section>
+						<h2>Comment l'implémenter ?</h2>
+					</section>
+					<section>
+						<p>J'implémente moi-même la DataCollectorInterface</p>
+						<pre class="full-code">
+							<code>
+interface DataCollectorInterface
+{
+	/**
+	* Collects data for the given Request and Response.
+	*
+	* @param Request    $request   A Request instance
+	* @param Response   $response  A Response instance
+	* @param \Exception $exception An Exception instance
+	*/
+	public function collect(Request $request, Response $response, \Exception $exception = null);
+
+	/**
+	* Returns the name of the collector.
+	*
+	* @return string The collector name
+	*/
+	public function getName();
+}
+							</code>
+						</pre>
+					</section>
+					<section>
+						<p>J'extends la class DataCollector</p>
+						<pre class="full-code">
+							<code>
+abstract class DataCollector implements DataCollectorInterface, \Serializable
+{
+	protected $data = array();
+
+							</code>
+						</pre>
+					</section>
+					<section>
+						<p>Je déclare un service avec le tag `data_collector`</p>
+						<pre class="full-code">
+							<code>
+loco.data_collector.dumb:
+	class: 'AppBundle\DataCollector\DumbDataCollector'
+	tags:
+	- { name: 'data_collector', id: 'dumb', template: "@AppBundle/Resources/views/profiler/dumb.html.twig"}
+							</code>
+						</pre>
+					</section>
+					<section>
+						<p>Un bout de Twig</p>
+						<pre class="full-code">
+							<code>
+{% extends '@WebProfiler/Profiler/layout.html.twig' %}
+
+{% block toolbar %}
+	{% set icon %}
+		{{ include('@WebProfiler/Icon/search.svg') }}
+		Une icone
+	{% endset %}
+
+	{% set text %}
+		Un texte
+	{% endset %}
+
+	{{ include('@WebProfiler/Profiler/toolbar_item.html.twig', { link: profiler_url }) }}
+{% endblock %}
+
+{% block menu %}
+	Ici un menu
+{% endblock %}
+
+{% block panel %}
+	Ici du contenu
+{% endblock %}
+							</code>
+						</pre>
+					</section>
+					<section>
+						<h2>Et</h2>
+						<p class="fragment">C'est tout</p>
+					</section>
+					<section>
+						<h2>Demo </h2>
+						<img src="img/fail.gif" />
+					</section>
+				</section>
+
+				<section>
+					<section>
+						<h2>Jouons avec les trads</h2>
+						<p class="fragment">Puisqu'on a un DataCollector pour les trads, pourquoi ne pas s'en servir ?</p>
+						<small class="fragment"><a href="http://jolicode.com/blog/translation-workflow-with-symfony2">Idée tirée du blog de JoliCode</a></small>
+					</section>
+					<section>
+						<h2>Comment le TranslationDataCollector fonctionne ?</h2>
+						<p class="fragment">Tire parti de la <code>LateDataCollectorInterface</code></p>
+						<pre class="fragment">
+							<code>
+interface LateDataCollectorInterface
+{
+	/**
+	* Collects data as late as possible.
+	*/
+	public function lateCollect();
+}
+							</code>
+						</pre>
+						<p class="fragment">Appelé au <code>saveProfile</code> du Profiler</p>
+					</section>
+					<section>
+						<h2>Go mettre les mains dans le cambouis</h2>
+					</section>
+				</section>
+
+				<section>
+					<h1>The END</h1>
+					<img src="img/end.gif" />
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+		<img id="logo" src="img/elao.png" />
+	</body>
+</html>
